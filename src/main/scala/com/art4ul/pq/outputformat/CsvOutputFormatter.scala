@@ -24,7 +24,7 @@ import org.apache.parquet.schema.MessageType
 import com.github.tototoshi.csv._
 import scala.collection.JavaConversions._
 
-class CsvOutputFormatter(override val schema: MessageType, out: PrintStream = System.out)(implicit conf: ExecutionContext)
+class CsvOutputFormatter(override val schema: MessageType, out: PrintStream )(implicit conf: ExecutionContext)
   extends OutputFormatter {
 
   val writer = CSVWriter.open(out)

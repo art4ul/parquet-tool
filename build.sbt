@@ -9,14 +9,15 @@ version := "0.1"
 
 scalaVersion := "2.11.10"
 
-val log4jVersion = "2.10.0"
-val parquetVersion = "1.8.1"
+val log4jVersion = "2.11.0"
+val parquetVersion = "1.8.2"
 val hadoopVersion = "2.7.1"
 val slf4jVersion = "1.7.25"
 
+dependencyOverrides += "org.slf4j" % "slf4j-api" % slf4jVersion
+
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.0",
-  "org.slf4j" % "slf4j-api" % slf4jVersion,
   "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4jVersion,
   "org.apache.logging.log4j" % "log4j-api" % log4jVersion,
@@ -33,7 +34,7 @@ libraryDependencies ++= Seq(
     exclude("log4j" ,"log4j"),
   "org.apache.hadoop" % "hadoop-common" % hadoopVersion
     exclude("log4j" ,"log4j")
-    exclude("org.slf4j", "slf4j-log4j")
+    exclude("org.slf4j", "slf4j-log4j12")
 )
 
 enablePlugins(JavaAppPackaging)

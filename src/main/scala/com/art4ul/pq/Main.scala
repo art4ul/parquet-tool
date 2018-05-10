@@ -19,26 +19,27 @@ package com.art4ul.pq
 import java.util.logging.LogManager
 
 import ExecutionContext._
-import com.art4ul.pq.outputformat.OutputFormatter
-import com.art4ul.pq.parquet.{MetadataManager, ParquetIO}
-import org.apache.hadoop.conf.Configuration
+import com.art4ul.pq.action.ContentViewer.{CatAction, HeadAction, TailAction}
+import com.art4ul.pq.action.UndefinedAction
+import org.slf4j.LoggerFactory
 
 object Main {
+
+  val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]): Unit = {
     LogManager.getLogManager().readConfiguration(getClass.getResourceAsStream("/logging.properties"));
     withConfig(args) { implicit ctx =>
-      implicit val fsConfig = new Configuration()
-      val io = new ParquetIO(fsConfig)
-      val schema = MetadataManager.commonSchema(ctx.paths)
-      def records = io.readParquets(ctx.paths: _*)()
-
-      val formatter = OutputFormatter(schema)
-      try {
-        formatter.format(records)
-      }finally {
-        formatter.close()
+      val printer = System.out
+      val action = ctx.cmd match {
+        case CmdType.Cat => new CatAction(printer)
+        case CmdType.Head => new HeadAction(printer)
+        case CmdType.Tail => new TailAction(printer)
+        case _ => UndefinedAction
       }
+
+      action.action()
+
     }
 
   }

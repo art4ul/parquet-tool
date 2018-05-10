@@ -17,6 +17,8 @@
 package com.art4ul.pq.outputformat
 
 
+import java.io.{OutputStream, PrintStream}
+
 import com.art4ul.pq.{ExecutionContext, OutputFormat}
 import com.art4ul.pq.parquet.ParquetSupport.ParquetRecord
 import org.apache.parquet.schema.MessageType
@@ -34,9 +36,9 @@ abstract class OutputFormatter {
 }
 
 object OutputFormatter {
-  def apply(schema: MessageType)(implicit ctx: ExecutionContext): OutputFormatter = ctx.outputFormat match {
-    case OutputFormat.Table => new TableOutputFormatter(schema)
-    case OutputFormat.Csv => new CsvOutputFormatter(schema)
+  def apply(schema: MessageType, out: PrintStream)(implicit ctx: ExecutionContext): OutputFormatter = ctx.outputFormat match {
+    case OutputFormat.Table => new TableOutputFormatter(schema,out)
+    case OutputFormat.Csv => new CsvOutputFormatter(schema,out)
     case _ => throw new UnsupportedOperationException()
   }
 }

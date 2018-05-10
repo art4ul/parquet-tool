@@ -60,22 +60,22 @@ object ExecutionContext {
 
       cmd("head")
         .optional()
-        .action((_, c) => c.copy(cmd = CmdType.Head, limit = None))
+        .action((_, c) => c.copy(cmd = CmdType.Head))
         .text(s"Print first N line from parquet file (Default: $DefaultLineLimit)")
 
       cmd("tail")
         .optional()
-        .action((_, c) => c.copy(cmd = CmdType.Tail, limit = None))
+        .action((_, c) => c.copy(cmd = CmdType.Tail))
         .text(s"Print last N line from parquet file (Default: $DefaultLineLimit)")
 
       cmd("schema")
         .optional()
-        .action((_, c) => c.copy(cmd = CmdType.Schema, limit = None))
+        .action((_, c) => c.copy(cmd = CmdType.Schema))
         .text(s"Show parquet schema")
 
       cmd("meta")
         .optional()
-        .action((_, c) => c.copy(cmd = CmdType.Meta, limit = None))
+        .action((_, c) => c.copy(cmd = CmdType.Meta))
         .text(s"Show parquet metadata")
 
       opt[String]('q', "query")
@@ -86,18 +86,22 @@ object ExecutionContext {
         .action((_, c) => c.copy(verbose = true))
         .text("verbose is a flag")
 
+      opt[Int]('l',"limit")
+        .action((l, c) => c.copy(limit = Some(l)))
+        .text("Limit of lines")
+
       opt[String]('f', "format")
         .action((f, c) => f.toLowerCase match {
           case "csv" => c.copy(outputFormat = OutputFormat.Csv)
           case "table" => c.copy(outputFormat = OutputFormat.Table)
           case "json" => c.copy(outputFormat = OutputFormat.Json)
           case _ => c.copy(outputFormat = OutputFormat.Table)
-        }).children {
-        opt[Unit]('H', "skipheader")
-          .action((_, c) => c.copy(outputFormatOptions = c.outputFormatOptions.copy(skipHeader = true)))
-          .text("Skip header")
-      }
+        })
         .text("Set output format: <csv , table, json>")
+
+      opt[Unit]('H', "skipheader")
+        .action((_, c) => c.copy(outputFormatOptions = c.outputFormatOptions.copy(skipHeader = true)))
+        .text("Skip header")
 
       opt[(String, String)]('o', "options")
         .action({
@@ -117,7 +121,8 @@ object ExecutionContext {
 
     }
 
-    parser.parse(args, ExecutionContext()).foreach(fun)
+    val ctx = ExecutionContext()
+    parser.parse(args, ctx).foreach(fun)
   }
 
 }

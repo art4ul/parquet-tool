@@ -16,15 +16,17 @@
 
 package com.art4ul.pq.outputformat
 
-import java.io.PrintStream
+import java.io.{OutputStream, PrintStream, PrintWriter}
 
 import com.art4ul.pq.ExecutionContext
 import com.art4ul.pq.parquet.ParquetSupport.ParquetRecord
 import org.apache.parquet.schema.MessageType
+
 import scala.collection.JavaConversions._
 import de.vandermeer.asciitable.AsciiTable
 
-class TableOutputFormatter(override val schema: MessageType, out: PrintStream = System.out)(implicit conf: ExecutionContext)
+
+class TableOutputFormatter(override val schema: MessageType, out: PrintStream)(implicit conf: ExecutionContext)
   extends OutputFormatter {
 
   val table = new AsciiTable
@@ -32,19 +34,19 @@ class TableOutputFormatter(override val schema: MessageType, out: PrintStream = 
   def formatRecord(record: ParquetRecord): Unit = {
     val line = schema.getPaths
       .map(col => record.get(col.toList).getOrElse("null").toString)
-    table.addRow(line:_*)
+    table.addRow(line: _*)
     table.addRule
   }
 
   override def format(stream: => Stream[ParquetRecord]): Unit = {
     table.addRule
     if (!conf.outputFormatOptions.skipHeader) {
-      table.addRow(schema.getPaths.map(p => p.mkString(".")):_*)
+      table.addRow(schema.getPaths.map(p => p.mkString(".")): _*)
       table.addRule()
     }
     super.format(stream)
     out.println(table.render())
   }
 
-  override def close():Unit ={}
+  override def close(): Unit = {}
 }
