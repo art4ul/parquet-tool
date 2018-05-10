@@ -1,26 +1,40 @@
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging.autoImport._
 
-name := "parquet-viewer"
+name := "pq"
+
+organization := "com.art4ul"
 
 version := "0.1"
 
 scalaVersion := "2.11.10"
 
+val log4jVersion = "2.10.0"
+val parquetVersion = "1.8.1"
+val hadoopVersion = "2.7.1"
+val slf4jVersion = "1.7.25"
+
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.0",
-//  "org.slf4j" % "slf4j-api" % "1.7.5",
-//  "org.slf4j" % "slf4j-log4j12" % "1.7.5",
+  "org.slf4j" % "slf4j-api" % slf4jVersion,
+  "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4jVersion,
+  "org.apache.logging.log4j" % "log4j-api" % log4jVersion,
+  "org.apache.logging.log4j" % "log4j-core" % log4jVersion,
 
-  "org.apache.parquet" % "parquet-common" % "1.8.1",
-  "org.apache.parquet" % "parquet-encoding" % "1.8.1",
-  "org.apache.parquet" % "parquet-column" % "1.8.1",
-  "org.apache.parquet" % "parquet-hadoop" % "1.8.1",
-  "org.apache.hadoop" % "hadoop-hdfs" % "2.7.1" ,
-  "org.apache.hadoop" % "hadoop-common" % "2.7.1" ,
-  "com.github.scopt" %% "scopt" % "3.7.0"
+  "com.github.tototoshi" %% "scala-csv" % "1.3.5",
+  "de.vandermeer" % "asciitable" % "0.3.2",
+  "com.github.scopt" %% "scopt" % "3.7.0",
+  "org.apache.parquet" % "parquet-common" % parquetVersion,
+  "org.apache.parquet" % "parquet-encoding" % parquetVersion,
+  "org.apache.parquet" % "parquet-column" % parquetVersion,
+  "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
+  "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion
+    exclude("log4j" ,"log4j"),
+  "org.apache.hadoop" % "hadoop-common" % hadoopVersion
+    exclude("log4j" ,"log4j")
+    exclude("org.slf4j", "slf4j-log4j")
 )
-
 
 enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
