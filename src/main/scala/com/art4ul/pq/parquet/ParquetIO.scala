@@ -32,7 +32,7 @@ class ParquetIO(conf: Configuration) {
 
   val log = LoggerFactory.getLogger(getClass)
 
-  def readParquet(path: Path, filter: FilterCompat.Filter = FilterCompat.NOOP): Stream[ParquetRecord] = {
+  def readParquet(path: Path,filter: FilterCompat.Filter = FilterCompat.NOOP): Stream[ParquetRecord] = {
     log.info(s"read parquet:$path")
     ParquetReader
       .builder(new ParquetReadSupport, path)

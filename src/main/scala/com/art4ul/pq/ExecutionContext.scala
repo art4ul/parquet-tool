@@ -18,6 +18,7 @@ package com.art4ul.pq
 
 import Constants._
 import com.art4ul.pq.OutputFormat.OutputFormat
+import com.art4ul.pq.sql.{SqlParser, SqlQuery}
 import org.apache.hadoop.fs.Path
 
 object OutputFormat extends Enumeration {
@@ -33,8 +34,9 @@ object CmdType extends Enumeration {
 case class OutputFormatOptions(skipHeader: Boolean = false)
 
 case class ExecutionContext(cmd: CmdType.Value = CmdType.Head,
-                            query: Option[String] = None,
+                            query: Option[SqlQuery] = None,
                             limit: Option[Int] = Some(DefaultLineLimit),
+                            tableWidth:Int = 80,
                             verbose: Boolean = false,
                             options: Map[String, String] = Map[String, String](),
                             outputFormat: OutputFormat = OutputFormat.Table,
@@ -79,12 +81,16 @@ object ExecutionContext {
         .text(s"Show parquet metadata")
 
       opt[String]('q', "query")
-        .action((x, c) => c.copy(query = Some(x)))
+        .action((x, c) => c.copy(query = Some(SqlParser.parse(x))))
         .text("SQL like query")
 
       opt[Unit]("verbose")
         .action((_, c) => c.copy(verbose = true))
         .text("verbose is a flag")
+
+      opt[Int]('W',"width")
+        .action((w, c) => c.copy(tableWidth = w))
+        .text("set table width")
 
       opt[Int]('l',"limit")
         .action((l, c) => c.copy(limit = Some(l)))

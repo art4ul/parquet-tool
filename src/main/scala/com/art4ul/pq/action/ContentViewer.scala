@@ -22,10 +22,12 @@ import com.art4ul.pq.{CmdType, ExecutionContext}
 import com.art4ul.pq.outputformat.OutputFormatter
 import com.art4ul.pq.parquet.ParquetSupport.ParquetRecord
 import com.art4ul.pq.parquet.{MetadataManager, ParquetFilterConverter, ParquetIO}
-import com.art4ul.pq.sql.{EmptyAst, SqlParser}
+import com.art4ul.pq.sql._
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.filter2.compat.FilterCompat
 import org.apache.parquet.schema.MessageType
+
+import scala.collection.JavaConversions._
 
 object ContentViewer {
 
@@ -51,15 +53,28 @@ class ContentViewer(printer: PrintStream, fetcher: Stream[ParquetRecord] => Stre
                    (implicit ctx: ExecutionContext) extends Action {
 
 
-  def getParquetFilter(schema:MessageType): FilterCompat.Filter = {
+  def getParquetFilter(schema: MessageType): FilterCompat.Filter = {
     ctx.query match {
       case None => FilterCompat.NOOP
-      case Some(q) =>
-        val query = SqlParser.parse(q)
-        if (query.filter != EmptyAst) {
-          val filter = new ParquetFilterConverter(schema).convert(query.filter)
+      case Some(SqlQuery(_, queryFilter)) =>
+        if (queryFilter != EmptyAst) {
+          val filter = new ParquetFilterConverter(schema).convert(queryFilter)
           FilterCompat.get(filter)
         } else FilterCompat.NOOP
+    }
+  }
+
+
+  def getProjection(schema: MessageType): MessageType = {
+    ctx.query match {
+      case None => schema
+      case Some(SqlQuery(projection, _)) =>
+        projection match {
+          case ColumnProjection(cols) =>
+            val fields = cols.map(c => schema.getType(schema.getFieldIndex(c.name))).toList
+            new MessageType(schema.getName, fields)
+          case _ => schema
+        }
     }
   }
 
@@ -68,10 +83,12 @@ class ContentViewer(printer: PrintStream, fetcher: Stream[ParquetRecord] => Stre
     val io = new ParquetIO(fsConfig)
     val schema = MetadataManager.commonSchema(ctx.paths)
 
+    val projection = getProjection(schema)
     val parquetFilter = getParquetFilter(schema)
+
     def records = fetcher(io.readParquets(ctx.paths: _*)(parquetFilter))
 
-    val formatter = OutputFormatter(schema, printer)
+    val formatter = OutputFormatter(projection, printer)
     try {
       formatter.format(records)
     } finally {

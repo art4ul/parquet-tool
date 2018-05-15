@@ -23,13 +23,16 @@ import com.art4ul.pq.parquet.ParquetSupport.ParquetRecord
 import org.apache.parquet.schema.MessageType
 
 import scala.collection.JavaConversions._
-import de.vandermeer.asciitable.AsciiTable
+import de.vandermeer.asciitable.{AT_Context, AsciiTable}
 
 
 class TableOutputFormatter(override val schema: MessageType, out: PrintStream)(implicit conf: ExecutionContext)
   extends OutputFormatter {
 
-  val table = new AsciiTable
+  val ctx = new AT_Context
+  ctx.setWidth(conf.tableWidth)
+
+  val table = new AsciiTable(ctx)
 
   def formatRecord(record: ParquetRecord): Unit = {
     val line = schema.getPaths
