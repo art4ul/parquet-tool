@@ -21,8 +21,11 @@ import java.io.{OutputStream, PrintStream, PrintWriter}
 import com.art4ul.pq.{CmdType, ExecutionContext}
 import com.art4ul.pq.outputformat.OutputFormatter
 import com.art4ul.pq.parquet.ParquetSupport.ParquetRecord
-import com.art4ul.pq.parquet.{MetadataManager, ParquetIO}
+import com.art4ul.pq.parquet.{MetadataManager, ParquetFilterConverter, ParquetIO}
+import com.art4ul.pq.sql.{EmptyAst, SqlParser}
 import org.apache.hadoop.conf.Configuration
+import org.apache.parquet.filter2.compat.FilterCompat
+import org.apache.parquet.schema.MessageType
 
 object ContentViewer {
 
@@ -48,12 +51,25 @@ class ContentViewer(printer: PrintStream, fetcher: Stream[ParquetRecord] => Stre
                    (implicit ctx: ExecutionContext) extends Action {
 
 
+  def getParquetFilter(schema:MessageType): FilterCompat.Filter = {
+    ctx.query match {
+      case None => FilterCompat.NOOP
+      case Some(q) =>
+        val query = SqlParser.parse(q)
+        if (query.filter != EmptyAst) {
+          val filter = new ParquetFilterConverter(schema).convert(query.filter)
+          FilterCompat.get(filter)
+        } else FilterCompat.NOOP
+    }
+  }
+
   def action(): Unit = {
     implicit val fsConfig = new Configuration()
     val io = new ParquetIO(fsConfig)
     val schema = MetadataManager.commonSchema(ctx.paths)
 
-    def records = fetcher(io.readParquets(ctx.paths: _*)())
+    val parquetFilter = getParquetFilter(schema)
+    def records = fetcher(io.readParquets(ctx.paths: _*)(parquetFilter))
 
     val formatter = OutputFormatter(schema, printer)
     try {

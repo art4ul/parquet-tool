@@ -22,6 +22,8 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4jVersion,
   "org.apache.logging.log4j" % "log4j-api" % log4jVersion,
   "org.apache.logging.log4j" % "log4j-core" % log4jVersion,
+  "org.antlr" % "antlr4" % "4.7.1",
+  "org.antlr" % "antlr4-runtime" % "4.7.1",
 
   "com.github.tototoshi" %% "scala-csv" % "1.3.5",
   "de.vandermeer" % "asciitable" % "0.3.2",
@@ -34,8 +36,13 @@ libraryDependencies ++= Seq(
     exclude("log4j" ,"log4j"),
   "org.apache.hadoop" % "hadoop-common" % hadoopVersion
     exclude("log4j" ,"log4j")
-    exclude("org.slf4j", "slf4j-log4j12")
+    exclude("org.slf4j", "slf4j-log4j12"),
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 )
 
 enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
+
+antlr4Settings
+antlr4PackageName in Antlr4 := Some("com.art4ul.antlr")
+antlr4Version in Antlr4 := "4.7.1"
