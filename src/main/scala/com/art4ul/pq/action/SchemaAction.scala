@@ -10,7 +10,6 @@ class SchemaAction(printer: PrintStream)(implicit ctx: ExecutionContext) extends
 
   override def action(): Unit = {
     implicit val fsConfig = new Configuration()
-    val io = new ParquetIO(fsConfig)
     val schemas = MetadataManager.readSchemas(ctx.paths)
     val sb= new StringBuilder()
     schemas.foreach{schema=>
