@@ -20,7 +20,7 @@ import java.util.logging.LogManager
 
 import ExecutionContext._
 import com.art4ul.pq.action.ContentViewer.{CatAction, HeadAction, TailAction}
-import com.art4ul.pq.action.UndefinedAction
+import com.art4ul.pq.action.{SchemaAction, UndefinedAction}
 import org.slf4j.LoggerFactory
 
 object Main {
@@ -35,6 +35,7 @@ object Main {
         case CmdType.Cat => new CatAction(printer)
         case CmdType.Head => new HeadAction(printer)
         case CmdType.Tail => new TailAction(printer)
+        case CmdType.Schema => new SchemaAction(printer)
         case _ => UndefinedAction
       }
 
